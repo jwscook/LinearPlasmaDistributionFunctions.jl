@@ -1,0 +1,9 @@
+name = "LinearPlasmaDistributionFunctions"
+uuid = "418e9e33-9272-4e64-9c95-79a0ed2146f4"
+authors = ["James Cook <cookjws@gmail.com>"]
+version = "0.1.0"
+
+[deps]
+DualNumbers = "fa6b7ba4-c1ee-5f82-b5fc-ecf0adba8f74"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+LinearMaxwellVlasov = "b1137d70-0135-468f-bb3e-ace6f597c457"
