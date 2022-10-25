@@ -1,37 +1,37 @@
 using GLMakie
 
 using LinearMaxwellVlasov, LinearAlgebra, LinearPlasmaDistributionFunctions
+const LPDF = LinearPlasmaDistributionFunctions
 
-function foo()
-M = rand(3, 3); M .-= M' # a plasma tensor
+function foo(ngyro=30)
+  M = rand(3, 3); M .-= M' # a plasma tensor, with a nullspace
+  E = LPDF.linearelectricfield(M)
+  Ω = 1.0
+  Π = 1.0
+  ω = 10 * rand() * (1 + im / 10)
+  kz = 2rand() - 1
+  k⊥ = rand()
+  gyroharmonics = range(-ngyro, ngyro)
+  op = LPDF.Operator(Ω, ω, kz, k⊥, E, gyroharmonics)
+  vth = rand()
+  species = MaxwellianSpecies(Π, Ω, vth)
 
-E = LinearPlasmaDistributionFunctions.linearelectricfield(M)
-Ω = 1.0
-Π = 1.0
-ω = 10 * rand() * (1 + im / 10)
-kz = 2rand() - 1
-k⊥ = rand()
-op = LinearPlasmaDistributionFunctions.Operator(Ω, ω, kz, k⊥)
-vth = rand()
-species = MaxwellianSpecies(Π, Ω, vth)
+  vs, f0, f1 = LPDF.f₁vxvyvz(op, species, N=128, vmaxmultiplier=0.5)
+  @show -im * ω * LPDF.zerothmoment(op, species)
+  @show -im * ω * LPDF.firstmoment(op, species)
+  @show -im * ω * LPDF.secondmoment(op, species)
 
-
-N = 128
-vs = range(-6 * vth, 6 * vth, N)
-gyroharmonics = range(-30, 30)
-f1 = zeros(ComplexF64, N, N, N, length(gyroharmonics))
-for (l, n) in enumerate(gyroharmonics)
-  for (k, vz) in enumerate(vs), (j, vy) in enumerate(vs), (i, vx) in enumerate(vs)
-    v⊥ = sqrt(vx^2 + vy^2)
-    ϕ = atan(vy, vx)
-    f1[i, j, k, l] = op(species, E, n, vz, v⊥, ϕ) * exp(-im * n * ϕ)
-  end
+  return vs, f0, f1
 end
+
+vs, f0, f1 = foo(10)
+
+f0 ./= maximum(abs, f0)
 f1 ./= maximum(abs, f1)
 
-return vs, f1
-end
-
-vs, f1 = foo()
 f11 = real.(sum(f1, dims=4))[:, :, :, 1]
+
 contour(vs, vs, vs, f11,  isovalue=0.01, alpha=0.2)
+
+#contour(vs, vs, vs, f0 .+ f11 / 100,  isovalue=0.01, alpha=0.2)
+
