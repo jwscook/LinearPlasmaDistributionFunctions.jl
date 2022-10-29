@@ -122,7 +122,8 @@ function moment(op::Operator, s::LMV.AbstractKineticSpecies,
   end
   vz⊥lo = LMV.lowerintegralbounds(s)
   vz⊥hi = LMV.upperintegralbounds(s)
-  return 2π * HCubature.hcubature(integrand, (vz⊥lo..., -π), (vz⊥hi..., π))[1]
+  return 2π * HCubature.hcubature(integrand, (vz⊥lo..., -π), (vz⊥hi..., π),
+                                  atol=atol, rtol=rtol)[1]
 end
 
 struct ZerothMomentOperator <: AbstractMomentOperator end
