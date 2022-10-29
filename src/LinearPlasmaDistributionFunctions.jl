@@ -65,6 +65,12 @@ function (op::Operator)(s::LMV.AbstractKineticSpecies,
   return prefactor * dot(L, electricfield)
 end
 
+function normalise(x)
+  maxabsx = maximum(abs, x)
+  iszero(maxabsx) && return x
+  return x ./ maxabsx
+end
+
 function f₁vzv⊥ϕ(op::Operator, species::LMV.AbstractKineticSpecies;
     N=64, ϕ=0)
   vz0, v⊥0 = LMV.lowerintegralbounds(species)
@@ -78,11 +84,10 @@ function f₁vzv⊥ϕ(op::Operator, species::LMV.AbstractKineticSpecies;
     end
   end
   f0 = zeros(Float64, N, N)
-    for (k, vz) in enumerate(vzs), (j, v⊥) in enumerate(v⊥s)
+  for (i, vz) in enumerate(vzs), (j, v⊥) in enumerate(v⊥s)
     f0[i, j] = species(vz, v⊥)
   end
-  f1 ./= maximum(abs, f1)
-  return vs, f0, f1
+  return vzs, v⊥s, deepcopy(op.gyroharmonics), normalise(f0), normalise(f1)
 end
 
 function f₁vxvyvz(op::Operator, species::LMV.AbstractKineticSpecies;
@@ -105,8 +110,7 @@ function f₁vxvyvz(op::Operator, species::LMV.AbstractKineticSpecies;
     ϕ = atan(vy, vx)
     f0[i, j, k] = species(vz, v⊥)
   end
-  f1 ./= maximum(abs, f1)
-  return vs, f0, f1
+  return vs, normalise(f0), normalise(f1)
 end
 
 function moment(op::Operator, s::LMV.AbstractKineticSpecies,
