@@ -54,12 +54,12 @@ So
 $$
 (\omega - \vec v \cdot \vec k - i \Omega\frac{\partial}{\partial \phi}) f_1 = \sum_n(\omega - \vec v \cdot \vec k - \Omega n) g_n \exp(-in\phi) =-i\frac{q}{m\omega}\left[\vec L_\parallel \cdot \vec E_1 \frac{\partial}{\partial v_\parallel} + \vec L_\bot \cdot \vec E_1 \frac{\partial}{\partial v_\bot}\right] f_0\\
 $$
-Which separates out the different perturbations in gyroangle
+Which separates out the different perturbations in gyroangle so we can use their orthogonality to express each $g_n$ separately
 $$
-g_n \propto -i\frac{q \exp(in\phi)}{m\omega (\omega - k_\bot v_\bot \cos \phi - k_\parallel v_\parallel - n\Omega)}\sum_{i={\parallel,\bot}}\vec L_i \cdot \vec E_1 \frac{\partial f_0}{\partial v_i}\\
+g_n = -i\int_{-\pi}^{\pi} d \phi \frac{q \exp(in\phi)}{m\omega (\omega - k_\bot v_\bot \cos \phi - k_\parallel v_\parallel - n\Omega)}\sum_{i={\parallel,\bot}}\vec L_i \cdot \vec E_1 \frac{\partial f_0}{\partial v_i}\\
 $$
 Given that it's linear $\frac{q}{m}$ can be replaced by $\Omega$ because the amplitude of $f_1$ is arbitrary as long as its $\ll f_0$,
 $$
-g_n \propto -i\frac{\Omega \exp(in\phi)}{\omega (\omega - k_\bot v_\bot \cos \phi - k_\parallel v_\parallel - n\Omega)}\sum_{i={\parallel,\bot}}\vec L_i \cdot \vec E_1 \frac{\partial f_0}{\partial v_i}.\\
+g_n = -i \int_{-\pi}^{\pi} d \phi\frac{\Omega \exp(in\phi)}{\omega (\omega - k_\bot v_\bot \cos \phi - k_\parallel v_\parallel - n\Omega)}\sum_{i={\parallel,\bot}}\vec L_i \cdot \vec E_1 \frac{\partial f_0}{\partial v_i}.\\
 $$
 
