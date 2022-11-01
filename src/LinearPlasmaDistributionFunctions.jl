@@ -1,7 +1,8 @@
 module LinearPlasmaDistributionFunctions
 
 using DualNumbers, LinearMaxwellVlasov, LinearAlgebra, StaticArrays
-using HCubature
+using ThreadSafeDicts
+using HCubature, Memoization, Base.Threads
 
 const LMV = LinearMaxwellVlasov
 
@@ -68,8 +69,9 @@ function (op::Operator)(s::LMV.AbstractKineticSpecies,
   return @. prefactor * dotLE * cis(n * ϕ)
 end
 
-function (op::Operator)(s::LMV.AbstractKineticSpecies,
-    vz::Number, v⊥::Number, gyroharmonics; atol=0, rtol=sqrt(eps()))
+@memoize ThreadSafeDict{Any,Any} function (op::Operator)(
+    s::LMV.AbstractKineticSpecies, vz::Number, v⊥::Number, gyroharmonics;
+    atol=0, rtol=sqrt(eps()))
   return HCubature.hcubature(ϕ->op(s, vz, v⊥, ϕ[1], gyroharmonics), (-π,), (π,), 
                        atol=atol, rtol=rtol)[1]
 end
@@ -82,8 +84,11 @@ end
 
 function f₀(species, vzs, v⊥s)
   f0 = zeros(Float64, length(vzs), length(v⊥s))
-  for (j, v⊥) in enumerate(v⊥s), (i, vz) in enumerate(vzs)
-    f0[i, j] = species(vz, v⊥)
+  @threads for j in eachindex(v⊥s)
+    v⊥ = v⊥s[j]
+    for (i, vz) in enumerate(vzs)
+      f0[i, j] = species(vz, v⊥)
+    end
   end
   return f0
 end
@@ -96,9 +101,13 @@ function f₁vzv⊥n(op::Operator, species::LMV.AbstractKineticSpecies,
   v⊥s = range(v⊥0, v⊥1, N)
   ns = gyroharmonics # short hand reference
   f1 = zeros(ComplexF64, N, N, length(ns))
-  for (j, v⊥) in enumerate(v⊥s), (i, vz) in enumerate(vzs)
+  #for (j, v⊥) in enumerate(v⊥s), (i, vz) in enumerate(vzs)
+  @threads for j in eachindex(v⊥s)
+    v⊥ = v⊥s[j]
+    for (i, vz) in enumerate(vzs)
     # iteration is in wrong order but loop is hot enough to be able ignore?
-    f1[i, j, :] .= op(species, vz, v⊥, ns)
+      f1[i, j, :] .= op(species, vz, v⊥, ns)
+    end
   end
   f0 = f₀(species, vzs, v⊥s)
   return vzs, v⊥s, ns, normalise(f0), normalise(f1)
@@ -109,8 +118,13 @@ function f₁vzv⊥ϕ(op::Operator, species::LMV.AbstractKineticSpecies,
   vzs, v⊥s, ns, f0, f1n = f₁vzv⊥n(op, species, gyroharmonics; N=64)
   ϕs = range(-π, π, N)
   f1 = zeros(ComplexF64, N, N, N)
-  for (k, ϕ) in enumerate(ϕs), (j, v⊥) in enumerate(v⊥s), (i, vz) in enumerate(vzs)
-    f1[i, j, k] += dot((@view f1n[i, j, :]), cis.(-gyroharmonics .* ϕ))
+  @threads for k in eachindex(ϕs)
+    ϕ = ϕs[k]
+    for (j, v⊥) in enumerate(v⊥s)
+      for (i, vz) in enumerate(vzs)
+        f1[i, j, k] = dot((@view f1n[i, j, :]), cis.(-gyroharmonics .* ϕ))
+      end
+    end
   end
   return vzs, v⊥s, ϕs, f0, normalise(f1)
 end
@@ -149,7 +163,8 @@ for (stub, amo) ∈ ((:zeroth, :ZerothMomentOperator),
 end
 
 function integrateover(op::Operator, s::LMV.AbstractKineticSpecies,
-    directions::Vararg{Symbol, N}; atol=0, rtol=sqrt(eps())) where N
+    gyroharmonics, directions::Vararg{Symbol, N}; atol=0, rtol=sqrt(eps())
+    ) where N
   vz⊥lo = LMV.lowerintegralbounds(s)
   vz⊥hi = LMV.upperintegralbounds(s)
   function integrand(vzv⊥ϕ)
