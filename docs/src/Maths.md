@@ -31,7 +31,7 @@ $$
 $$
  and introducing $\partial f_0/\partial \phi = 0$, expanding and simplifying 
 $$
-\left[\left(\omega-\vec v \cdot \vec k\right)\vec E_1\cdot \nabla_v \right] + \left[\vec v\cdot \vec E_1\vec k\cdot \nabla_v \right] =\\\left(\omega-k_\bot v_\bot \cos \phi - k_\parallel v_\parallel\right)\left(E_{z}\frac{\partial}{\partial v_{z}}+(E_{x}\cos\phi+E_{y}\sin\phi)\frac{\partial}{\partial v_{\perp}}\right) + \\(E_x v_\bot \cos \phi + E_y v_\bot \sin \phi + E_z v_\parallel)\left(k_{\parallel}\frac{\partial}{\partial v_{z}}+k_{\perp}\cos\phi\frac{\partial}{\partial v_{\perp}}\right)
+\left[\left(\omega-\vec v \cdot \vec k\right)\vec E_1\cdot \nabla_v \right] + \left[\vec v\cdot \vec E_1\vec k\cdot \nabla_v \right] =\\\left(\omega-k_\bot v_\bot \cos \phi - k_\parallel v_\parallel\right)\left(E_{z}\frac{\partial}{\partial v_{\parallel}}+(E_{x}\cos\phi+E_{y}\sin\phi)\frac{\partial}{\partial v_{\perp}}\right) + \\(E_x v_\bot \cos \phi + E_y v_\bot \sin \phi + E_z v_\parallel)\left(k_{\parallel}\frac{\partial}{\partial v_{\parallel}}+k_{\perp}\cos\phi\frac{\partial}{\partial v_{\perp}}\right)
 $$
 Turning to sympy
 
@@ -43,12 +43,12 @@ expr = (w - kr * vr * cos(p) - kz * vz) * ((Ex * cos(p) + Ey * sin(p))*dr + Ez *
 ```
 
 $$
-(k_z v_\bot \cos\phi E_x + k_z v_\bot \sin\phi E_y + (\omega - k_\bot v_\bot) E_z)\frac{\partial}{\partial v_\parallel}+\\((\omega - k_\parallel v_z) \cos\phi E_x + (\omega - k_z v_z)\sin\phi E_y + k_\bot v_z\cos\phi E_z)\frac{\partial}{\partial v_\bot}
+(k_\parallel v_\bot \cos\phi E_x + k_\parallel v_\bot \sin\phi E_y + (\omega - k_\bot v_\bot) E_z)\frac{\partial}{\partial v_\parallel}+\\((\omega - k_\parallel v_\parallel) \cos\phi E_x + (\omega - k_\parallel v_z)\sin\phi E_y + k_\bot v_\parallel\cos\phi E_z)\frac{\partial}{\partial v_\bot}
 $$
 
 Let
 $$
-\vec L_\parallel = (k_z v_\bot \cos\phi \hat e_x + k_z v_\bot \sin\phi \hat e_y + (\omega - k_\bot v_\bot) \hat e_z)\\\vec L_\bot = ((\omega - k_\parallel v_z) \cos\phi \hat e_x + (\omega - k_z v_z)\sin\phi \hat e_y + k_\bot v_z\cos\phi \hat e_z)
+\vec L_\parallel = (k_\parallel v_\bot \cos\phi \hat e_x + k_\parallel v_\bot \sin\phi \hat e_y + (\omega - k_\bot v_\bot) \hat e_z)\\\vec L_\bot = ((\omega - k_\parallel v_\parallel) \cos\phi \hat e_x + (\omega - k_\parallel v_\parallel)\sin\phi \hat e_y + k_\bot v_\parallel\cos\phi \hat e_z)
 $$
 So
 $$
@@ -63,3 +63,37 @@ $$
 g_n = -i \int_{-\pi}^{\pi} d \phi\frac{\Omega \exp(in\phi)}{\omega (\omega - k_\bot v_\bot \cos \phi - k_\parallel v_\parallel - n\Omega)}\sum_{i={\parallel,\bot}}\vec L_i \cdot \vec E_1 \frac{\partial f_0}{\partial v_i}.\\
 $$
 
+## Limit $k_\parallel=0$
+
+$$
+\vec L_\parallel = (0 \hat e_x + 0 e_y + (\omega - k_\bot v_\bot) \hat e_z)\\
+\vec L_\bot = (\omega \cos\phi \hat e_x + \omega\sin\phi \hat e_y + k_\bot v_z\cos\phi \hat e_z)
+$$
+
+
+$$
+g_n = -i \int_{-\pi}^{\pi} d \phi\frac{\Omega \exp(in\phi)}{\omega (\omega - k_\bot v_\bot \cos \phi - n\Omega)}\sum_{i={\parallel,\bot}}\vec L_i \cdot \vec E_1 \frac{\partial f_0}{\partial v_i}.\\
+$$
+
+###
+
+## Limit $k_\bot=0$
+
+$$
+\vec L_\parallel = (k_z v_\bot \cos\phi \hat e_x + k_z v_\bot \sin\phi \hat e_y + \omega \hat e_z)\\\vec L_\bot = ((\omega - k_\parallel v_z) \cos\phi \hat e_x + (\omega - k_z v_z)\sin\phi \hat e_y + 0 \hat e_z)
+$$
+
+$$
+g_n = -i \int_{-\pi}^{\pi} d \phi\frac{\Omega \exp(in\phi)}{\omega (\omega - k_\parallel v_\parallel - n\Omega)}\sum_{i={\parallel,\bot}}\vec L_i \cdot \vec E_1 \frac{\partial f_0}{\partial v_i}.\\
+$$
+
+## Limit $k_\bot =0$ and $E =[0,0,E_z]'$
+
+$$
+g_n = -i \frac{\Omega}{(\omega - k_\parallel v_\parallel - n\Omega)}E_z \frac{\partial f_0}{\partial v_z}\int_{-\pi}^{\pi} d \phi \exp(in\phi).\\
+$$
+
+Hence only $n=0$ gives a non-zero answer, and $E_z$ is arbitrary because this problem is linear
+$$
+g_0 = -i2\pi \frac{\Omega}{(\omega - k_\parallel v_\parallel)} \frac{\partial f_0}{\partial v_\parallel}.\\
+$$
